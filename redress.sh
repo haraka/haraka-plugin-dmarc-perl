@@ -18,12 +18,12 @@ sed -i '' \
     -e "s/template\.ini/$1.ini/" \
     index.js
     
-mv config/template.ini config/$1.ini
-
-git add package.json README.md index.js test/index.js 
+git mv config/template.ini "config/$1.ini"
+git add package.json README.md index.js test config
 git commit -m "renamed template to $1"
+npm install
 npm run lint && npm test || exit 1
-rm redress.sh
+git rm redress.sh
 
 echo "success!"
 echo ""

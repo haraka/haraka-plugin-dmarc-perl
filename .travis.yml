@@ -1,7 +1,7 @@
 language: node_js
 node_js:
-    - "4"
     - "6"
+    - "8"
 
 services:
 # https://docs.travis-ci.com/user/database-setup/
@@ -16,7 +16,7 @@ script:
     - npm test
 
 after_success:
-#
+
 # enable codecov, which doesn't currently work for plugins because
 # plugins are run in vm.runInNewContext()
 #

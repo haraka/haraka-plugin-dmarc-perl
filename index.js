@@ -10,9 +10,9 @@ exports.load_template_ini = function () {
 
     plugin.cfg = plugin.config.get('template.ini', {
         booleans: [
-            '+enabled',               // plugins.cfg.main.enabled=true
-            '-disabled',              // plugins.cfg.main.disabled=false
-            '+feature_section.yes'    // plugins.cfg.feature_section.yes=true
+            '+enabled',               // plugin.cfg.main.enabled=true
+            '-disabled',              // plugin.cfg.main.disabled=false
+            '+feature_section.yes'    // plugin.cfg.feature_section.yes=true
         ]
     },
     function () {

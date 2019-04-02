@@ -28,8 +28,110 @@ exports.load_dmarc_perl_ini = function () {
     if (this.cfg.main.port) { port = this.cfg.main.port; }
 }
 
+function get_dkim_plugin_results (txn, body) {
+    if (!txn.notes.dkim_results) return;
+
+    for (const d of txn.notes.dkim_results) {
+        if (!d.domain || !d.selector || !d.result) continue;
+        body.dkim.push({
+            domain:   d.domain,
+            selector: d.selector,
+            result:   d.result,
+        });
+    }
+}
+
+function get_spamassassin_dkim (txn, body) {
+
+    if (!txn.notes.spamassassin) return;
+
+    const sa_tests = txn.notes.spamassassin.tests;
+    if (!sa_tests) return;
+
+    if (!/DKIM_SIGNED/.test(sa_tests)) return;
+
+    if (/DKIM_VALID_AU/.test(sa_tests)) {
+        body.dkim.push({
+            domain: (addrparser.parse(body.header_from_raw))[0].host(),
+            selector: 'spamassassin',
+            result: 'pass',
+        });
+    }
+}
+
+function get_rspamd_dkim (txn, body) {
+
+    // check rspamd symbols
+    const rspamd = txn.results.get('rspamd');
+    if (rspamd && rspamd.symbols) {
+        if (rspamd.symbols.R_DKIM_ALLOW !== undefined) {
+            body.dkim.push({
+                domain: (addrparser.parse(body.header_from_raw))[0].host(),
+                selector: 'rspamd',
+                result: 'pass',
+            })
+        }
+        if (rspamd.symbols.R_DKIM_REJECT !== undefined) {
+            body.dkim.push({
+                domain: (addrparser.parse(body.header_from_raw))[0].host(),
+                selector: 'rspamd',
+                result: 'fail',
+            })
+        }
+    }
+}
+
+function get_spf_results (connection, body) {
+
+    const txn = connection.transaction;
+
+    // SPF mfrom
+    if (txn) {
+        const mf_spf = txn.results.get('spf');
+        if (mf_spf) body.spf.push({ scope: 'mfrom', result: mf_spf.result, domain: mf_spf.domain });
+    }
+
+    // SPF helo
+    const h_spf = connection.results.get('spf');
+    if (h_spf) body.spf.push({ scope: 'helo', result: h_spf.result, domain: h_spf.domain });
+}
+
+function get_rspamd_spf (txn, body) {
+
+    if (body.spf.length) return;  // already got results
+
+    // no results, check rspamd symbols
+    const rspamd = txn.results.get('rspamd');
+    if (rspamd && rspamd.symbols) {
+        if (rspamd.symbols.R_SPF_ALLOW !== undefined) {
+            body.spf.push({
+                result: 'Pass', domain: txn.mail_from.host
+            })
+        }
+        if (rspamd.symbols.R_SPF_FAIL !== undefined) {
+            body.spf.push({ result: 'Fail', domain: txn.mail_from.host })
+        }
+    }
+}
+
+function get_spamassassin_spf (txn, body) {
+
+    // no results yet
+    if (body.spf.length) return;
+    if (!txn.notes.spamassassin) return;
+
+    const sa_tests = txn.notes.spamassassin.tests;
+    if (!sa_tests) return;
+
+    if (/SPF_PASS/.test(sa_tests)) {
+        body.spf.push({ result: 'Pass', domain: txn.mail_from.host })
+    }
+    if (/SPF_FAIL/.test(sa_tests)) {
+        body.spf.push({ result: 'Fail', domain: txn.mail_from.host })
+    }
+}
+
 exports.assemble_HTTP_POST = function (connection) {
-    const plugin = this;
 
     return new Promise((resolve, reject) => {
         const txn = connection.transaction;
@@ -44,44 +146,15 @@ exports.assemble_HTTP_POST = function (connection) {
             ],
         };
 
-        // populate DKIM results from dkim_verify plugin
-        if (txn.notes.dkim_results) {
-            for (const d of txn.notes.dkim_results) {
-                if (!d.domain || !d.selector || !d.result) continue;
-                body.dkim.push({
-                    domain:   d.domain,
-                    selector: d.selector,
-                    result:   d.result,
-                });
-            }
-        }
+        // populate DKIM results from...
+        get_dkim_plugin_results(txn, body);
+        get_rspamd_dkim(txn, body);
+        get_spamassassin_dkim(txn, body);
 
-        // if dkim_verify didn't store results
-        if (!body.dkim.length) {
-            // maybe SA validated DKIM
-            const sa_tests = connection.transaction.header.get('X-Spam-Tests');
-            if (sa_tests && /DKIM_SIGNED/.test(sa_tests)) {
-                connection.loginfo(plugin, "SA found DKIM sig");
-                if (/DKIM_VALID_AU/.test(sa_tests)) {
-                    connection.loginfo(plugin, "SA DKIM passed");
-                    body.dkim.push({
-                        domain: (addrparser.parse(body.header_from_raw))[0].host(),
-                        selector: 'spamassassin',
-                        result: 'pass',
-                    });
-                }
-            }
-        }
-
-        // SPF mfrom
-        if (connection.transaction) {
-            const mf_spf = connection.transaction.results.get('spf');
-            if (mf_spf) body.spf.push({ scope: 'mfrom', result: mf_spf.result, domain: mf_spf.domain });
-        }
-
-        // SPF helo
-        const h_spf = connection.results.get('spf');
-        if (h_spf) body.spf.push({ scope: 'helo', result: h_spf.result, domain: h_spf.domain });
+        // populate SPF results from...
+        get_spf_results(connection, body);  // SPF plugin
+        get_rspamd_spf(txn, body);          // rspamd
+        get_spamassassin_spf(txn, body);    // Spamassassin
 
         resolve(JSON.stringify(body));
     })
@@ -171,14 +244,12 @@ exports.hook_data_post = function (next, connection) {
                 connection.auth_results(`dmarc=pass ${auth_pub}`);
             }
             else {
-                // failed DMARC
-                if (dmarc.published) {
+                if (dmarc.published) {      // DMARC alignment failed
                     connection.transaction.results.add(plugin, { fail: auth_pub, emit: true });
                     connection.auth_results(`dmarc=fail ${auth_pub}`);
                 }
                 if (dmarc.reason) {
                     for (const reason of dmarc.reason) {
-                        connection.loginfo(plugin, `${reason.type}:${reason.comment}`)
                         connection.transaction.results.add(plugin, { msg: `${reason.type}:${reason.comment}`, emit: true });
                     }
                 }

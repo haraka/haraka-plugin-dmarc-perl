@@ -31,6 +31,7 @@
     "mocha": "*"
   },
   "dependencies": {
-    "address-rfc2822": "^2.0.4"
+    "address-rfc2821": "*",
+    "address-rfc2822": "*"
   }
 }

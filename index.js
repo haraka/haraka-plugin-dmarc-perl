@@ -28,28 +28,40 @@ exports.load_dmarc_perl_ini = function () {
     if (this.cfg.main.port) { port = this.cfg.main.port; }
 }
 
-exports.assemble_HTTP_POST = (connection) => {
+exports.assemble_HTTP_POST = function (connection) {
     const plugin = this;
 
     return new Promise((resolve, reject) => {
         const txn = connection.transaction;
-        const body   = {
+        const body = {
             source_ip:       connection.remote.ip,
             envelope_to:     txn.rcpt_to[0].host,
             envelope_from:   txn.mail_from.host,
             header_from_raw: txn.header.get_decoded('From'),
-            dkim:            txn.notes.dkim_results || [],
+            dkim:            [],
             spf : [
                 /* { domain => 'example.com', scope => 'mfrom', result => 'pass' } */
             ],
         };
 
-        if (!body.dkim && !body.dkim.length) {
-            body.dkim = [];
-            // did SA validate DKIM?
+        // populate DKIM results from dkim_verify plugin
+        if (txn.notes.dkim_results) {
+            for (const d of txn.notes.dkim_results) {
+                if (!d.domain || !d.selector || !d.result) continue;
+                body.dkim.push({
+                    domain:   d.domain,
+                    selector: d.selector,
+                    result:   d.result,
+                });
+            }
+        }
+
+        // if dkim_verify didn't store results
+        if (!body.dkim.length) {
+            // maybe SA validated DKIM
             const sa_tests = connection.transaction.header.get('X-Spam-Tests');
             if (sa_tests && /DKIM_SIGNED/.test(sa_tests)) {
-                connection.loginfo(plugin, "SA found DKIM sig!");
+                connection.loginfo(plugin, "SA found DKIM sig");
                 if (/DKIM_VALID_AU/.test(sa_tests)) {
                     connection.loginfo(plugin, "SA DKIM passed");
                     body.dkim.push({
@@ -75,7 +87,7 @@ exports.assemble_HTTP_POST = (connection) => {
     })
 }
 
-exports.get_http_opts = function (md_string) {
+function get_http_opts (md_string) {
     return new Promise(resolve => {
         resolve({
             host: host,
@@ -91,11 +103,10 @@ exports.get_http_opts = function (md_string) {
 }
 
 exports.getJSON = function (postData) {
-    const plugin = this;
 
     return new Promise((resolve, reject) => {
 
-        plugin.get_http_opts(postData).then(httpOpts => {
+        get_http_opts(postData).then(httpOpts => {
 
             const req = http.request(httpOpts, (res) => {
 
@@ -130,7 +141,7 @@ exports.getJSON = function (postData) {
     })
 }
 
-exports.hook_data_post = (next, connection) => {
+exports.hook_data_post = function (next, connection) {
     const plugin = this;
 
     plugin.assemble_HTTP_POST(connection)
@@ -156,19 +167,19 @@ exports.hook_data_post = (next, connection) => {
             }
 
             if (dmarc.result === 'pass') {
-                connection.transaction.results.add(plugin, { pass: auth_pub});
+                connection.transaction.results.add(plugin, { pass: auth_pub, emit: true });
                 connection.auth_results(`dmarc=pass ${auth_pub}`);
             }
             else {
                 // failed DMARC
                 if (dmarc.published) {
-                    connection.loginfo(plugin, `dmarc=fail ${auth_pub}`)
+                    connection.transaction.results.add(plugin, { fail: auth_pub, emit: true });
                     connection.auth_results(`dmarc=fail ${auth_pub}`);
                 }
                 if (dmarc.reason) {
                     for (const reason of dmarc.reason) {
                         connection.loginfo(plugin, `${reason.type}:${reason.comment}`)
-                        connection.transaction.results.add(plugin, { msg: `${reason.type}:${reason.comment}` });
+                        connection.transaction.results.add(plugin, { msg: `${reason.type}:${reason.comment}`, emit: true });
                     }
                 }
             }

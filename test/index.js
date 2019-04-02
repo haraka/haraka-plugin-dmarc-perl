@@ -3,10 +3,10 @@
 const assert   = require('assert');
 
 // npm modules
-const fixtures = require('haraka-test-fixtures');
+const fixtures    = require('haraka-test-fixtures');
 const ResultStore = require('haraka-results')
 
-const Address  = require('address-rfc2821').Address;
+const Address     = require('address-rfc2821').Address;
 
 beforeEach(function (done) {
     this.plugin = new fixtures.plugin('dmarc-perl');
@@ -43,6 +43,7 @@ function getConnection () {
     conn.transaction.mail_from = new Address('sender@example.com');
     conn.transaction.header.add('From', 'Mock Sender <sender@example.com')
     conn.transaction.results = new ResultStore(conn.transaction);
+    conn.transaction.notes.dkim_results = [];
     return conn;
 }
 
@@ -63,7 +64,9 @@ describe('assemble_HTTP_POST', () => {
     })
 })
 
-describe('get_http_opts', function () {
+// const plugin = this doesn't work inside a promise running as plugin
+// for now, not exported
+describe.skip('get_http_opts', function () {
 
     const expected = {
         host: '127.0.0.1',

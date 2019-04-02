@@ -6,19 +6,12 @@
 
 # haraka-plugin-dmarc-perl
 
+## SYNOPSIS
 
-## Install
-
-Install Mail::DMARC somewhere and run the included `dmarc_httpd` CLI program. Configure dmarc-perl.ini to point at the Mail::DMARC HTTP service. Enable this plugin in haraka's config/plugins file.
-
-
-## Enable Travis-CI testing
-
-- [ ] visit your [Travis-CI profile page](https://travis-ci.org/profile) and enable Continuous Integration testing on the repo
-- [ ] enable Code Climate. Click the _code climate_ badge and import your repo.
-
-
-# Add your content here
+- Install Mail::DMARC somewhere
+- Run the included `dmarc_httpd` CLI program.
+- Configure dmarc-perl.ini to point at the Mail::DMARC HTTP service.
+- Enable this plugin in haraka's config/plugins file.
 
 ## INSTALL
 
@@ -44,8 +37,8 @@ $EDITOR config/dmarc-perl.ini
 <!-- leave these buried at the bottom of the document -->
 [ci-img]: https://travis-ci.org/haraka/haraka-plugin-dmarc-perl.svg
 [ci-url]: https://travis-ci.org/haraka/haraka-plugin-dmarc-perl
-[ci-win-img]: https://ci.appveyor.com/api/projects/status/CHANGETHIS?svg=true
-[ci-win-url]: https://ci.appveyor.com/project/haraka/haraka-CHANGETHIS
+[ci-win-img]: https://ci.appveyor.com/api/projects/status/pcmc1s0ef7ndss20?svg=true
+[ci-win-url]: https://ci.appveyor.com/project/haraka/haraka-pcmc1s0ef7ndss20
 [clim-img]: https://codeclimate.com/github/haraka/haraka-plugin-dmarc-perl/badges/gpa.svg
 [clim-url]: https://codeclimate.com/github/haraka/haraka-plugin-dmarc-perl
 [gk-img]: https://badges.greenkeeper.io/haraka/haraka-plugin-dmarc-perl.svg

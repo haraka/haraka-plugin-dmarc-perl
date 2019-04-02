@@ -1,7 +1,7 @@
 {
   "name": "haraka-plugin-dmarc-perl",
   "version": "1.0.0",
-  "description": "Haraka plugin that frobnicates email connections",
+  "description": "Haraka plugin that DMARC validates incoming messages",
   "main": "index.js",
   "scripts": {
     "lint": "./node_modules/.bin/eslint *.js test/**/*.js",
@@ -18,16 +18,19 @@
     "plugin",
     "dmarc-perl"
   ],
-  "author": "Welcome Member <happy-haraka-hacker@example.com>",
+  "author": "Matt Simerson <matt@tnpi.net>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/haraka/haraka-plugin-dmarc-perl/issues"
   },
   "homepage": "https://github.com/haraka/haraka-plugin-dmarc-perl#readme",
   "devDependencies": {
-    "eslint": ">=3",
+    "eslint": ">=4",
     "eslint-plugin-haraka": "*",
     "haraka-test-fixtures": "*",
     "mocha": "*"
+  },
+  "dependencies": {
+    "address-rfc2822": "^2.0.4"
   }
 }

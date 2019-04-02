@@ -2,13 +2,13 @@
 [![Code Climate][clim-img]][clim-url]
 [![Greenkeeper badge][gk-img]][gk-url]
 [![NPM][npm-img]][npm-url]
-<!-- requires URL update [![Windows Build Status][ci-win-img]][ci-win-url] -->
+[![Windows Build Status][ci-win-img]][ci-win-url]
 
 # haraka-plugin-dmarc-perl
 
 ## SYNOPSIS
 
-- Install Mail::DMARC somewhere
+- Install Mail::DMARC somewhere. [Example](https://github.com/msimerson/Mail-Toaster-6/blob/master/provision-mail-dmarc.sh)
 - Run the included `dmarc_httpd` CLI program.
 - Configure dmarc-perl.ini to point at the Mail::DMARC HTTP service.
 - Enable this plugin in haraka's config/plugins file.

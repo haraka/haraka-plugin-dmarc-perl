@@ -35,10 +35,10 @@ $EDITOR config/dmarc-perl.ini
 
 
 <!-- leave these buried at the bottom of the document -->
-[ci-img]: https://travis-ci.org/haraka/haraka-plugin-dmarc-perl.svg
-[ci-url]: https://travis-ci.org/haraka/haraka-plugin-dmarc-perl
-[ci-win-img]: https://ci.appveyor.com/api/projects/status/pcmc1s0ef7ndss20?svg=true
-[ci-win-url]: https://ci.appveyor.com/project/haraka/haraka-pcmc1s0ef7ndss20
+[ci-img]: https://github.com/haraka/haraka-plugin-dmarc-perl/workflows/Plugin%20Tests/badge.svg
+[ci-url]: https://github.com/haraka/haraka-plugin-dmarc-perl/actions?query=workflow%3A%22Plugin+Tests%22
+[ci-win-img]: https://github.com/haraka/haraka-plugin-dmarc-perl/workflows/Tests%20-%20Windows/badge.svg
+[ci-win-url]: https://github.com/haraka/haraka-plugin-dmarc-perl/actions?query=workflow%3A%22Tests+-+Windows%22
 [clim-img]: https://codeclimate.com/github/haraka/haraka-plugin-dmarc-perl/badges/gpa.svg
 [clim-url]: https://codeclimate.com/github/haraka/haraka-plugin-dmarc-perl
 [npm-img]: https://nodei.co/npm/haraka-plugin-dmarc-perl.png

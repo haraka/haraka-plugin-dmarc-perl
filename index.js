@@ -163,8 +163,8 @@ exports.assemble_HTTP_POST = function (connection) {
 function get_http_opts (md_string) {
     return new Promise(resolve => {
         resolve({
-            host: host,
-            port: port,
+            host,
+            port,
             method: 'POST',
             path: '/dmarc/json/validate',
             headers: {

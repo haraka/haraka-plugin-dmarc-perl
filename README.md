@@ -1,8 +1,8 @@
 [![Build Status][ci-img]][ci-url]
-[![Code Climate][clim-img]][clim-url]
-[![Greenkeeper badge][gk-img]][gk-url]
-[![NPM][npm-img]][npm-url]
 [![Windows Build Status][ci-win-img]][ci-win-url]
+[![Code Climate][clim-img]][clim-url]
+
+[![NPM][npm-img]][npm-url]
 
 # haraka-plugin-dmarc-perl
 
@@ -41,7 +41,5 @@ $EDITOR config/dmarc-perl.ini
 [ci-win-url]: https://ci.appveyor.com/project/haraka/haraka-pcmc1s0ef7ndss20
 [clim-img]: https://codeclimate.com/github/haraka/haraka-plugin-dmarc-perl/badges/gpa.svg
 [clim-url]: https://codeclimate.com/github/haraka/haraka-plugin-dmarc-perl
-[gk-img]: https://badges.greenkeeper.io/haraka/haraka-plugin-dmarc-perl.svg
-[gk-url]: https://greenkeeper.io/
 [npm-img]: https://nodei.co/npm/haraka-plugin-dmarc-perl.png
 [npm-url]: https://www.npmjs.com/package/haraka-plugin-dmarc-perl

@@ -1,10 +1,18 @@
-engines: 
+engines:
   eslint:
     enabled: true
-    channel: "eslint-3"
+    channel: "eslint-6"
     config:
-      config: ".eslintrc.json"
+      config: ".eslintrc.yaml"
 
 ratings:
    paths:
    - "**.js"
+
+checks:
+  method-lines:
+    config:
+      threshold: 50
+  method-complexity:
+    config:
+      threshold: 10

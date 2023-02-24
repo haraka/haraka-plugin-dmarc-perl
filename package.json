@@ -1,6 +1,6 @@
 {
   "name": "haraka-plugin-dmarc-perl",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Haraka plugin that DMARC validates incoming messages",
   "main": "index.js",
   "scripts": {
